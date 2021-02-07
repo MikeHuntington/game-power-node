@@ -4,14 +4,17 @@
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// https://substrate.dev/docs/en/knowledgebase/runtime/frame
 
-use frame_support::{decl_module, decl_storage, decl_event, decl_error, dispatch, traits::Get};
+use frame_support::{decl_module, decl_storage, decl_event, decl_error, dispatch, traits::Get, RuntimeDebug};
 use frame_system::ensure_signed;
+use codec::{Encode, Decode};
 
-#[cfg(test)]
-mod mock;
 
-#[cfg(test)]
-mod tests;
+#[derive(Encode, Decode, Clone, Eq, PartialEq, RuntimeDebug)]
+pub struct Guild {
+  pub id: GuildId,
+}
+
+pub type GuildId = u64;
 
 /// Configure the pallet by specifying the parameters and types on which it depends.
 pub trait Trait: frame_system::Trait {
@@ -29,16 +32,21 @@ decl_storage! {
 		// Learn more about declaring storage items:
 		// https://substrate.dev/docs/en/knowledgebase/runtime/storage#declaring-storage-items
 		Something get(fn something): Option<u32>;
+		pub NextGuildId get(fn next_guild_id): GuildId = 1;
 	}
 }
 
 // Pallets use events to inform users when important changes are made.
 // https://substrate.dev/docs/en/knowledgebase/runtime/events
 decl_event!(
-	pub enum Event<T> where AccountId = <T as frame_system::Trait>::AccountId {
+	pub enum Event<T> 
+		where 
+			AccountId = <T as frame_system::Trait>::AccountId
+	{
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored(u32, AccountId),
+		GuildCreated(Guild, AccountId),
 	}
 );
 
@@ -83,21 +91,17 @@ decl_module! {
 
 		/// An example dispatchable that may throw a custom error.
 		#[weight = 10_000 + T::DbWeight::get().reads_writes(1,1)]
-		pub fn cause_error(origin) -> dispatch::DispatchResult {
-			let _who = ensure_signed(origin)?;
+		pub fn create_guild(origin) -> dispatch::DispatchResult {
+			let who = ensure_signed(origin)?;
+		
+			let guild_id = Self::next_guild_id();
+			let new_guild: Guild = Guild {
+				id: guild_id
+			};
 
-			// Read a value from storage.
-			match Something::get() {
-				// Return an error if the value has not been set.
-				None => Err(Error::<T>::NoneValue)?,
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					Something::put(new);
-					Ok(())
-				},
-			}
+			Self::deposit_event(RawEvent::GuildCreated(new_guild, who));
+
+			Ok(())
 		}
 	}
 }
