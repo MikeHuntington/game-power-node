@@ -15,6 +15,7 @@ use sp_runtime::{
 use sp_runtime::traits::{
 	BlakeTwo256, Block as BlockT, Verify, IdentifyAccount, NumberFor, Saturating,
 };
+use sp_runtime::ModuleId;
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
@@ -40,6 +41,8 @@ pub use frame_support::{
 
 /// Import the template pallet.
 pub use pallet_template;
+/// Import the gamepower-nft pallet.
+pub use gamepower_nft;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -95,7 +98,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("node-template"),
 	impl_name: create_runtime_str!("node-template"),
 	authoring_version: 1,
-	spec_version: 100,
+	spec_version: 2,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -117,6 +120,11 @@ pub fn native_version() -> NativeVersion {
 		runtime_version: VERSION,
 		can_author_with: Default::default(),
 	}
+}
+
+// Module accounts of runtime
+parameter_types! {
+	pub const GamePowerNftModuleId: ModuleId = ModuleId(*b"gp/gpNFT");
 }
 
 parameter_types! {
@@ -266,6 +274,19 @@ impl pallet_template::Trait for Runtime {
 	type Event = Event;
 }
 
+parameter_types! {
+	pub const CreateClassDeposit: Balance = 50 * 10_000_000_000_000;
+	pub const CreateTokenDeposit: Balance = 100 * 10_000_000_000_000;
+}
+
+/// Configure the gamepoer nft pallet in pallets/gamepower-nft.
+impl gamepower_nft::Trait for Runtime {
+	type Event = Event;
+	type CreateClassDeposit = CreateClassDeposit;
+	type CreateTokenDeposit = CreateTokenDeposit;
+	type ModuleId = GamePowerNftModuleId;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -283,6 +304,7 @@ construct_runtime!(
 		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
 		// Include the custom logic from the template pallet in the runtime.
 		TemplateModule: pallet_template::{Module, Call, Storage, Event<T>},
+		GamerPowerNft: gamepower_nft::{Module, Call, Storage, Event<T>},
 	}
 );
 

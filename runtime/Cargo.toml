@@ -26,7 +26,9 @@ serde = { features = ['derive'], optional = true, version = '1.0.119' }
 
 # local dependencies
 pallet-template = { path = '../pallets/template', default-features = false, version = '2.0.1' }
+gamepower-nft = { path = '../pallets/gamepower-nft', default-features = false, version = '2.0.1' }
 
+# ORML
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '2.0.1' }
 frame-executive = { default-features = false, version = '2.0.1' }
@@ -73,6 +75,7 @@ std = [
     'frame-support/std',
     'frame-system/std',
     'frame-system-rpc-runtime-api/std',
+    'gamepower-nft/std',
     'pallet-aura/std',
     'pallet-balances/std',
     'pallet-grandpa/std',

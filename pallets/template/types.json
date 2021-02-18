@@ -1,0 +1,14 @@
+{
+   "GuildId":"u64",
+   "GuildOf":"Guild<AccountIdOf>",
+   "AccountIdOf":"AccountId",
+   "Guild":{
+      "id":"GuildId",
+      "name":"Text",
+      "members":"Vec<AccountId>"
+   },
+   "GuildUpdate":{
+      "members":"Vec<AccountId>",
+      "name":"Text"
+   }
+ }

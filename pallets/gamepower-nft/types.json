@@ -1,0 +1,7 @@
+{
+  "CID":"Vec<u8>",
+  "Properties":{
+    "Transferable":"u8",
+    "Burnable":"u8"
+ }
+}

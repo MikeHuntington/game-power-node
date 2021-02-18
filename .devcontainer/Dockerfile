@@ -1,0 +1,1 @@
+FROM enfipy/substrate-dev:latest
