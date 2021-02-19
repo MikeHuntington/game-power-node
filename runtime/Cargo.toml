@@ -29,6 +29,10 @@ pallet-template = { path = '../pallets/template', default-features = false, vers
 gamepower-nft = { path = '../pallets/gamepower-nft', default-features = false, version = '2.0.1' }
 
 # ORML
+orml-currencies = { default-features = false, version = '0.3.0' }
+orml-tokens = { default-features = false, version = '0.3.0' }
+orml-nft = { default-features = false, version = '0.3.0' }
+
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '2.0.1' }
 frame-executive = { default-features = false, version = '2.0.1' }
@@ -39,6 +43,7 @@ frame-system-rpc-runtime-api = { default-features = false, version = '2.0.1' }
 pallet-aura = { default-features = false, version = '2.0.1' }
 pallet-balances = { default-features = false, version = '2.0.1' }
 pallet-grandpa = { default-features = false, version = '2.0.1' }
+pallet-proxy = { version = "2.0.1", default-features = false }
 pallet-randomness-collective-flip = { default-features = false, version = '2.0.1' }
 pallet-sudo = { default-features = false, version = '2.0.1' }
 pallet-timestamp = { default-features = false, version = '2.0.1' }
@@ -79,6 +84,7 @@ std = [
     'pallet-aura/std',
     'pallet-balances/std',
     'pallet-grandpa/std',
+    'pallet-proxy/std',
     'pallet-randomness-collective-flip/std',
     'pallet-sudo/std',
     'pallet-template/std',
@@ -96,4 +102,7 @@ std = [
     'sp-std/std',
     'sp-transaction-pool/std',
     'sp-version/std',
+    'orml-currencies/std',
+    'orml-tokens/std',
+    'orml-nft/std',
 ]

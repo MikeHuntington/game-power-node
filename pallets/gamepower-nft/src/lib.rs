@@ -26,8 +26,13 @@ use sp_runtime::{
 	traits::{AccountIdConversion, StaticLookup, Zero},
 	DispatchResult, ModuleId, RuntimeDebug,
 };
+use orml_traits::{BasicCurrency, BasicReservableCurrency};
+use orml_utilities::with_transaction_result;
+use orml_nft::{self as nft};
 
 type AccountIdOf<T> = <T as system::Trait>::AccountId;
+pub type TokenIdOf<T> = <T as orml_nft::Trait>::TokenId;
+pub type ClassIdOf<T> = <T as orml_nft::Trait>::ClassId;
 
 /// NFT Properties
 pub type CID = sp_std::vec::Vec<u8>;
@@ -75,7 +80,7 @@ pub struct GuildUpdate<AccountIdOf> {
 pub type GuildId = u64;
 
 /// Configure the pallet by specifying the parameters and types on which it depends.
-pub trait Trait: system::Trait {
+pub trait Trait: system::Trait + nft::Trait<ClassData = ClassData, TokenData = TokenData> {
 	/// Because this pallet emits events, it depends on the runtime's definition of an event.
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
@@ -87,6 +92,8 @@ pub trait Trait: system::Trait {
 
 	/// The NFT's module id
 	type ModuleId: Get<ModuleId>;
+
+	type Currency: BasicReservableCurrency<Self::AccountId, Balance = Balance>;
 }
 
 
@@ -110,14 +117,16 @@ decl_storage! {
 decl_event!(
 	pub enum Event<T> 
 		where 
-			AccountId = AccountIdOf<T>
+			AccountId = AccountIdOf<T>,
+			ClassId = ClassIdOf<T>
 	{
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored(u32, AccountId),
 		GuildCreated(u64, Vec<u8>, AccountId),
 		GuildUpdated(u64, Vec<u8>),
-		CreatedClass(AccountId, Balance),
+		/// Created NFT class. \[owner, class_id\]
+		CreatedClass(AccountId, ClassId),
 	}
 );
 
@@ -130,6 +139,8 @@ decl_error! {
 		NoGuildFound,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		/// NFT Class creation failed
+		FailedToCreateNFTClass,
 	}
 }
 
@@ -193,16 +204,25 @@ decl_module! {
 		}
 
 		#[weight = 10_000]
-		pub fn create_class(origin, metadata: CID, properties: ClassProperties) -> dispatch::DispatchResult {
+		pub fn create_class(origin, metadata:CID, properties:ClassProperties) -> dispatch::DispatchResult {
 			let who = ensure_signed(origin)?;
-			let deposit = T::CreateClassDeposit::get();
-			let owner: T::AccountId = T::ModuleId::get().into_sub_account(who);
+			let deposit:Balance = T::CreateClassDeposit::get();
+			let next_id: T::ClassId = nft::Module::<T>::next_class_id();
+			let owner: T::AccountId = T::ModuleId::get().into_sub_account(next_id);
 
-			let data = ClassData { deposit, properties};
+			// it depends https://github.com/paritytech/substrate/issues/7563
+			<T as Config>::Currency::transfer(&who, &owner, deposit)?;
+			// Currently, use `free_balance(owner)` instead of `deposit`.
+			<T as Config>::Currency::reserve(&owner, <T as Config>::Currency::free_balance(&owner))?;
 
+			// owner add proxy delegate to origin
+			<T as pallet_proxy::Trait>::Currency::transfer(&who, &owner, proxy_deposit, KeepAlive)?;
+			<T as pallet_proxy::Call>::add_proxy_delegate(&owner, who, Default::default(), Zero::zero())?;
 
+			let data = ClassData { deposit, properties };
+			nft::Module::<T>::create_class(&owner, metadata, data)?;
 
-			Self::deposit_event(RawEvent::CreatedClass(owner, deposit));
+			Self::deposit_event(RawEvent::CreatedClass(owner, next_id));
 			Ok(())
 		}
 	}
