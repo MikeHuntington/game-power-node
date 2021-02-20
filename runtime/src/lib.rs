@@ -41,6 +41,7 @@ use pallet_transaction_payment::CurrencyAdapter;
 
 /// Import the template pallet.
 pub use pallet_template;
+pub use gamepower_nft;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -264,6 +265,11 @@ impl pallet_template::Config for Runtime {
 	type Event = Event;
 }
 
+/// Configure the gamepower nft pallet in pallets/template.
+impl gamepower_nft::Config for Runtime {
+	type Event = Event;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -281,6 +287,7 @@ construct_runtime!(
 		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
 		// Include the custom logic from the template pallet in the runtime.
 		TemplateModule: pallet_template::{Module, Call, Storage, Event<T>},
+		GamepowerNFT: gamepower_nft::{Module, Call, Storage, Event<T>},
 	}
 );
 
