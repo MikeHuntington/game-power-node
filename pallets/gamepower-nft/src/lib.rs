@@ -4,34 +4,64 @@
 #![allow(clippy::upper_case_acronyms)]
 
 use codec::{Decode, Encode};
-use frame_support::{ensure, pallet_prelude::*, Parameter, transactional,};
+#[cfg(feature = "std")]
+use serde::{Deserialize, Serialize};
+use frame_support::{pallet_prelude::*, transactional,};
 use frame_system::pallet_prelude::*;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, One, Zero},
-	DispatchError, DispatchResult, RuntimeDebug,
+	RuntimeDebug,
 };
-use sp_std::vec::Vec;
 
 
 pub use module::*;
+
+#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub struct ClassData {
+	/// The minimum balance to create class
+	pub deposit: u128,
+	/// Property of token
+	pub properties: ClassProperties,
+}
+
+#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub struct TokenData {
+	/// The minimum balance to create token
+	pub deposit: u128,
+}
+
+#[derive(Encode, Decode, Clone, Copy, RuntimeDebug, PartialEq, Eq)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub struct ClassProperties {
+	/// Token can be transferred
+	transferable: bool,
+	/// Token can be burned
+	burnable: bool,
+}
+
 
 #[frame_support::pallet]
 pub mod module {
 	use super::*;
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + orml_nft::Config<ClassData = ClassData, TokenData = TokenData> {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 	}
+
 
 	#[pallet::error]
 	pub enum Error<T> {
 
 	}
 
+
 	#[pallet::storage]
 	#[pallet::getter(fn next_guild_id)]
 	pub type NextGuildId<T: Config> = StorageValue<_, u32, ValueQuery>;
+
+
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -40,6 +70,7 @@ pub mod module {
 		/// Tested Event. \[owner\]
 		TestedCall(T::AccountId),
 	}
+
 
 
 	#[pallet::pallet]

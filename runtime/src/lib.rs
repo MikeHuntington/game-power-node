@@ -42,6 +42,7 @@ use pallet_transaction_payment::CurrencyAdapter;
 /// Import the template pallet.
 pub use pallet_template;
 pub use gamepower_nft;
+pub use orml_nft;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -260,6 +261,14 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
+/// ORML Config
+impl orml_nft::Config for Runtime {
+	type ClassId = u64;
+	type TokenId = u64;
+	type ClassData = u32;
+	type TokenData = u32;
+}
+
 /// Configure the template pallet in pallets/template.
 impl pallet_template::Config for Runtime {
 	type Event = Event;
@@ -287,7 +296,10 @@ construct_runtime!(
 		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
 		// Include the custom logic from the template pallet in the runtime.
 		TemplateModule: pallet_template::{Module, Call, Storage, Event<T>},
-		GamepowerNFT: gamepower_nft::{Module, Call, Storage, Event<T>},
+		GamepowerNFT: gamepower_nft::{Module, Config, Call, Storage, Event<T>},
+
+		// ORML
+		OrmlNFT: orml_nft::{Module, Storage, Config<T>},
 	}
 );
 
