@@ -15,33 +15,6 @@ use sp_runtime::{
 
 pub use module::*;
 
-#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct ClassData {
-	/// The minimum balance to create class
-	pub deposit: u128,
-	/// Property of token
-	pub properties: ClassProperties,
-}
-
-#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct TokenData {
-	/// The minimum balance to create token
-	pub deposit: u128,
-}
-
-#[derive(Encode, Decode, Clone, Copy, RuntimeDebug, PartialEq, Eq)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct ClassProperties {
-	/// Token can be transferred
-	transferable: bool,
-	/// Token can be burned
-	burnable: bool,
-}
-
-pub type TokenIdOf<T> = <T as orml_nft::Config>::TokenId;
-pub type ClassIdOf<T> = <T as orml_nft::Config>::ClassId;
 
 #[frame_support::pallet]
 pub mod module {
@@ -69,8 +42,11 @@ pub mod module {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	#[pallet::metadata(T::AccountId = "AccountId")]
 	pub enum Event<T: Config> {
-		/// Tested Event. \[owner\]
-		TestedCall(T::AccountId),
+		/// Game Started Event. \[owner\]
+		GameStarted(T::AccountId),
+
+        /// Game Ended Event. \[owner\]
+        GameEnded(T::AccountId),
 	}
 
 
@@ -86,10 +62,20 @@ pub mod module {
 		
 		#[pallet::weight(10_000)]
 		#[transactional]
-		pub fn test_call(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		pub fn start_game(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
-			Self::deposit_event(Event::<T>::TestedCall(who));
+			Self::deposit_event(Event::<T>::GameStarted(who));
+
+			Ok(().into())
+		}
+
+        #[pallet::weight(10_000)]
+		#[transactional]
+		pub fn end_game(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+
+			Self::deposit_event(Event::<T>::GameEnded(who));
 
 			Ok(().into())
 		}

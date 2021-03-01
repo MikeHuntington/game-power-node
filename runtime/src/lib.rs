@@ -42,7 +42,7 @@ use pallet_transaction_payment::CurrencyAdapter;
 /// Import the template pallet.
 pub use pallet_template;
 pub use gamepower_nft;
-pub use orml_nft;
+pub use gamepower;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -265,8 +265,8 @@ impl pallet_sudo::Config for Runtime {
 impl orml_nft::Config for Runtime {
 	type ClassId = u64;
 	type TokenId = u64;
-	type ClassData = u32;
-	type TokenData = u32;
+	type ClassData = gamepower_nft::ClassData;
+	type TokenData = gamepower_nft::TokenData;
 }
 
 /// Configure the template pallet in pallets/template.
@@ -274,10 +274,16 @@ impl pallet_template::Config for Runtime {
 	type Event = Event;
 }
 
-/// Configure the gamepower nft pallet in pallets/template.
+/// Configure the gamepower nft pallet in pallets/gamepower-nft.
 impl gamepower_nft::Config for Runtime {
 	type Event = Event;
 }
+
+/// Configure the gamepower pallet.
+impl gamepower::Config for Runtime {
+	type Event = Event;
+}
+
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -294,9 +300,11 @@ construct_runtime!(
 		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
 		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
+
 		// Include the custom logic from the template pallet in the runtime.
 		TemplateModule: pallet_template::{Module, Call, Storage, Event<T>},
-		GamepowerNFT: gamepower_nft::{Module, Config, Call, Storage, Event<T>},
+		GamepowerNFT: gamepower_nft::{Module, Call, Storage, Event<T>},
+		Gamepower: gamepower::{Module, Call, Storage, Event<T>},
 
 		// ORML
 		OrmlNFT: orml_nft::{Module, Storage, Config<T>},
