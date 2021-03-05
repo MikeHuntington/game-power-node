@@ -1,7 +1,8 @@
 use sp_core::{Pair, Public, sr25519};
 use node_template_runtime::{
 	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig,
-	SudoConfig, SystemConfig, WASM_BINARY, Signature, OrmlNFTConfig
+	SudoConfig, SystemConfig, WASM_BINARY, Signature, OrmlNFTConfig,
+	ContractsConfig,
 };
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
@@ -131,7 +132,7 @@ fn testnet_genesis(
 	initial_authorities: Vec<(AuraId, GrandpaId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
-	_enable_println: bool,
+	enable_println: bool,
 ) -> GenesisConfig {
 	GenesisConfig {
 		frame_system: Some(SystemConfig {
@@ -156,6 +157,12 @@ fn testnet_genesis(
 		orml_nft: Some(OrmlNFTConfig {
 			// Assign network admin rights.
 			tokens:vec![],
+		}),
+		pallet_contracts: Some(ContractsConfig {
+			current_schedule: pallet_contracts::Schedule {
+					enable_println,
+					..Default::default()
+			},
 		}),
 	}
 }

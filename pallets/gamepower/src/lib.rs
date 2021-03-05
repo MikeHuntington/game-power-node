@@ -42,10 +42,10 @@ pub mod module {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	#[pallet::metadata(T::AccountId = "AccountId")]
 	pub enum Event<T: Config> {
-		/// Game Started Event. \[owner\]
+		/// Game Started Event. \[player\]
 		GameStarted(T::AccountId),
 
-        /// Game Ended Event. \[owner\]
+        /// Game Ended Event. \[player\]
         GameEnded(T::AccountId),
 	}
 
